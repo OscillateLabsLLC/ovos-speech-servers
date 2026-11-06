@@ -1,0 +1,16 @@
+services:
+  kokoro:
+    build: .
+    image: ovos-speech-servers/kokoro:local
+    ports:
+      - "9666:9666"
+    volumes:
+      # Model weights and voices from Hugging Face (~350 MB), plus the
+      # synthesis cache. Keep this volume so a restart does not download again.
+      - kokoro-cache:/home/ovos/.cache
+      # Uncomment to use your own config instead of the one in the image.
+      # - ./mycroft.conf:/home/ovos/.config/mycroft/mycroft.conf:ro
+    restart: unless-stopped
+
+volumes:
+  kokoro-cache:

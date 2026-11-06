@@ -1,0 +1,10 @@
+# Shared by the Dockerfile and scripts/install-venv.sh. Change pins here only.
+#
+# 0.28.x is the first ovos-stt-http-server line that accepts
+# ovos-plugin-manager 2.x (the plugin needs it) and reads the plugin's section
+# from mycroft.conf. PyPI's "latest" (0.1.4) has neither, so the alpha is pinned.
+ovos-stt-http-server==0.28.3a1
+ovos-stt-plugin-onnx-asr==0.6.1a2
+# Supplies onnxruntime and the Hugging Face downloader, which the plugin does
+# not declare. The OVOS installer uses the same extras.
+onnx-asr[cpu,hub]

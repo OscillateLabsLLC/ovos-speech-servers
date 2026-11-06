@@ -1,0 +1,16 @@
+services:
+  onnx-asr:
+    build: .
+    image: ovos-speech-servers/onnx-asr:local
+    ports:
+      - "8080:8080"
+    volumes:
+      # Downloaded models (~650 MB for the default int8 model). Keep this
+      # volume so a restart does not download the model again.
+      - onnx-asr-models:/home/ovos/.local/share
+      # Uncomment to use your own config instead of the one in the image.
+      # - ./mycroft.conf:/home/ovos/.config/mycroft/mycroft.conf:ro
+    restart: unless-stopped
+
+volumes:
+  onnx-asr-models:

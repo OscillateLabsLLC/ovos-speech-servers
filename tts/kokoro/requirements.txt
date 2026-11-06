@@ -1,0 +1,10 @@
+# Shared by the Dockerfile and scripts/install-venv.sh. Change pins here only.
+#
+# 1.13.4 is the newest stable ovos-tts-server. The 1.x line serves /status
+# with plain FastAPI (no gradio).
+ovos-tts-server==1.13.4
+ovos-tts-plugin-kokoro==0.4.0
+# Misaki (Kokoro's G2P) downloads this spaCy model on first use but does not
+# reload it in the same process, so the first request fails. Must match the
+# spaCy minor version that kokoro resolves (3.8.x).
+en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl

@@ -1,0 +1,59 @@
+name: Smoke test
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    # Weekly, so upstream breakage shows up here before users report it.
+    - cron: "17 9 * * 1"
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    name: ${{ matrix.engine }} (${{ matrix.method }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [stt/onnx-asr, tts/kokoro]
+        method: [docker, venv]
+        include:
+          - engine: stt/onnx-asr
+            kind: stt
+            url: http://localhost:8080
+          - engine: tts/kokoro
+            kind: tts
+            url: http://localhost:9666
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and start (Docker)
+        if: matrix.method == 'docker'
+        run: docker compose -f ${{ matrix.engine }}/compose.yml up -d --build
+
+      - uses: actions/setup-python@v5
+        if: matrix.method == 'venv'
+        with:
+          python-version: "3.12"
+
+      - name: Install and start (venv)
+        if: matrix.method == 'venv'
+        env:
+          PREFIX: ${{ runner.temp }}/servers
+        run: |
+          scripts/install-venv.sh ${{ matrix.engine }}
+          nohup "$PREFIX/$(basename ${{ matrix.engine }})/run.sh" > "$RUNNER_TEMP/server.log" 2>&1 &
+
+      - name: Smoke test
+        run: python3 scripts/smoke.py ${{ matrix.kind }} ${{ matrix.url }}
+
+      - name: Server logs
+        if: always()
+        run: |
+          if [ "${{ matrix.method }}" = docker ]; then
+            docker compose -f ${{ matrix.engine }}/compose.yml logs --tail 200
+          else
+            tail -n 200 "$RUNNER_TEMP/server.log"
+          fi
